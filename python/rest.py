@@ -27,7 +27,8 @@ class getToken:
         token = uuid.uuid4().hex
         token_id = int(time.time())
 
-        data = { 'token_id': token_id,
+        data = { 'return_type': 0,
+                 'token_id': token_id,
                  'user': user,
                  'token': token }
 
@@ -80,11 +81,22 @@ class openDoor:
                 md5 = m.hexdigest()
 
                 if md5 == hash:
-                    return "Correct! -- You may proceed"
-                else:
-                    return "Error: Incorrect hash [ %s ]" % hash
+                    data = { 'return_type': 1,
+                             'return_value': 0,
+                             'return_message': "" }
 
-        return "Error: Something went wrong."
+                    return data
+                else:
+                    data = { 'return_type': 1,
+                             'return_value': 1,
+                             'return_message': "Incorrect hash" }
+                    return data
+
+        data = { 'return_type': 1,
+                 'return_value': -1,
+                 'return_message': "Something went wrong." }
+
+        return data
 
 if __name__ == "__main__":
     app.run() # devel

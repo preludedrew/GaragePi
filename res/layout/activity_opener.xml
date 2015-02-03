@@ -17,73 +17,34 @@
             android:text="Welcome to GaragePi" />
 
 		<ProgressBar
-            android:id="@+id/progressBar1"
+            android:id="@+id/progress_bar"
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
-		<LinearLayout
-		        android:layout_width="match_parent"
-		        android:layout_height="0dp"
-		        android:layout_weight="1"
-		        android:orientation="vertical">
-			<LinearLayout
-	        	android:layout_width="match_parent"
-	        	android:layout_height="wrap_content"
-	        	android:orientation="horizontal">
-			
-				<TextView
-				    android:id="@+id/cpt_token"
-				    android:layout_width="match_parent"
-				    android:layout_height="wrap_content"
-				    android:layout_weight="1"
-				    android:text="Token:" />
-			
-				<TextView
-			    	android:id="@+id/txt_token"
-			    	android:layout_width="match_parent"
-			    	android:layout_height="wrap_content"
-			    	android:layout_weight="1"
-			    	android:text="xxxxx" />
-	        
-			</LinearLayout>
-	
-			<LinearLayout
-	       		android:layout_width="match_parent"
-	       		android:layout_height="wrap_content"
-	       		android:orientation="horizontal">
-			
-				<TextView
-				    android:id="@+id/cpt_token_id"
-				    android:layout_width="match_parent"
-				    android:layout_height="wrap_content"
-				    android:layout_weight="1"
-				    android:text="Token ID:" />
-			
-				<TextView
-			    	android:id="@+id/txt_token_id"
-			    	android:layout_width="match_parent"
-			    	android:layout_height="wrap_content"
-			    	android:layout_weight="1"
-			    	android:text="xxxxx" />
-	        
-			</LinearLayout>
-		</LinearLayout>	
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" 
-        android:orientation="vertical">
-
-        <Button
+		
+		<Button
             android:id="@+id/button1"
             android:layout_width="168dp"
             android:layout_height="105dp"
             android:layout_gravity="center"
             android:text="Open Door" />
-
+		
     </LinearLayout>
+
+
+	<ScrollView
+		 android:layout_width="match_parent"
+		 android:layout_height="0dp"
+		 android:layout_weight="1" 
+		 android:orientation="vertical">
+
+		<TextView
+		    android:id="@+id/txt_log"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:textSize="12sp" />
+
+	</ScrollView>
 
 </LinearLayout>
