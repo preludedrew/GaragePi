@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <PreferenceCategory
+            android:title="Auth">
+
+        <EditTextPreference
+                android:key="pref_username"
+                android:title="Username"
+                android:summary="Enter a username to login with." />
+        
+                <EditTextPreference
+                android:key="pref_password"
+                android:title="Password"
+                android:summary="Enter a password to login with." />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="Server">
+
+        <EditTextPreference
+                android:key="pref_server_ip"
+                android:title="Server IP Address"
+                android:summary="Enter an ip address to connect to." />
+        
+        <EditTextPreference
+                android:key="pref_server_port"
+                android:title="Server port number"
+                android:summary="Enter a port number connect with."
+                android:inputType="number" />
+
+    </PreferenceCategory>
+    
+</PreferenceScreen>

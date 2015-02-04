@@ -16,8 +16,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,28 +36,48 @@ public class OpenerActivity extends Activity {
     private static final int RETURN_OPEN    = 1;
     private static final int RETURN_TOKENS  = 2;
 
+    private static final int USERNAME_ACCEPTED = 0;
+    private static final int USERNAME_MISSING  = 1;
+
     private static final int HASH_ACCEPTED = 0;
     private static final int HASH_REJECTED = 1;
-    
+
     private static final boolean DEBUG = false;
-    
+
+    private String mUsername;
+    private String mPassword;
+    private String mServerIp;
+    private String mServerPort;
+
 	private Button mOpenDoor;
     private TextView mLogText;
     private ProgressBar mProgressBar;
 
 	private ArrayList<String> mLogBuffer = new ArrayList<String>();
 
+	SharedPreferences mPrefs;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_opener);
+
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		mOpenDoor = (Button) findViewById(R.id.button1);
 		mOpenDoor.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 			    mProgressBar.setVisibility(View.VISIBLE);
-				new HttpAsyncTask().execute("http://192.168.200.121/rest/getToken/andrew");
+
+                mUsername = mPrefs.getString("pref_username" , "");
+                mPassword = mPrefs.getString("pref_password" , "");
+			    mServerIp = mPrefs.getString("pref_server_ip", "");
+			    mServerPort = mPrefs.getString("pref_server_port", "60598");
+	
+			    addToLog("Connecting with: " + mServerIp + ":" + mServerPort);
+
+				new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/rest/getToken/" + mUsername);
 			}
 		});
 
@@ -73,6 +96,8 @@ public class OpenerActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+		    Intent settingsIntent = new Intent(this, SettingsActivity.class);
+	        startActivity(settingsIntent);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -84,10 +109,10 @@ public class OpenerActivity extends Activity {
 	    for (String line : mLogBuffer) {
 	        builder.append(line + "\n");
 	    }
-	    
+
 	    mLogText.setText(builder.toString());
 	}
-	
+
     private static String convertInputStreamToString(InputStream inputStream) throws IOException{
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
         String line = "";
@@ -112,14 +137,22 @@ public class OpenerActivity extends Activity {
                 if(inputStream != null)
                     result = convertInputStreamToString(inputStream);
                 else
-                    result = "Did not work!";
+                    result = "Error: Did not work!";
             } catch (Exception e) {
                 Log.d("GaragePi", e.getLocalizedMessage());
+                result = "Error: " + e.getLocalizedMessage();
             }
             return result;
         }
         @Override
         protected void onPostExecute(String result) {
+
+            if (result.startsWith("Error")) {
+                addToLog(result);
+                mProgressBar.setVisibility(View.INVISIBLE);
+                return;
+            }
+
             if (DEBUG) {
                 addToLog("GaragePi: " + result);
                 Log.d("GaragePi", result);
@@ -130,22 +163,31 @@ public class OpenerActivity extends Activity {
 				json = new JSONObject(result);
 
 				int retType = json.getInt("return_type");
+				int retValue = json.getInt("return_value");
 
 	            switch (retType) {
                     case RETURN_TOKEN:
-                        String token = json.getString("token");
-                        String token_id = json.getString("token_id");
+                        switch (retValue) {
+                            case USERNAME_ACCEPTED:
+                                String token = json.getString("token");
+                                String token_id = json.getString("token_id");
 
-                        addToLog("Received token: " + token);
+                                addToLog("Received token: " + token);
 
-                        addToLog("Calculating password has with token, for user: " + "andrew"); //TODO
-                        String md5sum = md5("blah123" + token);
+                                addToLog("Calculating password has with token, for user: " + mUsername); //TODO
+                                String md5sum = md5(mPassword + token);
 
-                        addToLog("Sending hashed password!");
-                        new HttpAsyncTask().execute("http://192.168.200.121/rest/openDoor/" + token_id + "/" + md5sum);
+                                addToLog("Sending hashed password!");
+                                new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/rest/openDoor/" + token_id + "/" + md5sum);
+                                break;
+                            case USERNAME_MISSING:
+                                String user = json.getString("user");
+                                addToLog("Username not accepted! - " + user);
+                                mProgressBar.setVisibility(View.INVISIBLE);
+                                break;
+                        }
                         break;
                     case RETURN_OPEN:
-                        int retValue = json.getInt("return_value");
                         String retMessage = json.getString("return_message");
                         switch (retValue) {
                             case HASH_ACCEPTED:
@@ -157,7 +199,7 @@ public class OpenerActivity extends Activity {
                             default:
                                 addToLog("Unknown rejection -- " + retMessage);
                         }
-                        
+
                         mProgressBar.setVisibility(View.INVISIBLE);
                         break;
                     case RETURN_TOKENS:
