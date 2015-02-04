@@ -14,7 +14,8 @@ if __name__ != "__main__":              # mod_wsgi has no concept of where it is
 urls = (
     '/getToken/(.*)', 'getToken',
     '/openDoor/(.*)/(.*)', 'openDoor',
-    '/getTokens', 'getTokens'
+    '/getTokens', 'getTokens',
+    '/getDoorStatus', 'getDoorStatus'
 )
 
 app = web.application(urls, globals())
@@ -24,28 +25,35 @@ USERS = { 'andrew': "blah123",
 
 class getToken:
     def GET(self, user):
-        token = uuid.uuid4().hex
-        token_id = int(time.time())
 
-        data = { 'return_type': 0,
-                 'token_id': token_id,
-                 'user': user,
-                 'token': token }
+        if user in USERS:
+            token = uuid.uuid4().hex
+            token_id = int(time.time())
 
-        entries = []
+            data = { 'return_type': 0,
+                     'return_value': 0,
+                     'token_id': token_id,
+                     'user': user,
+                     'token': token }
 
-        try:
-            with open("tokens.lst", "r") as tokenFile:
-                entries = json.load(tokenFile)
-        except IOError:
-            pass
-        except ValueError:
-            pass
+            entries = []
 
-        entries.append(data)
+            try:
+                with open("tokens.lst", "r") as tokenFile:
+                    entries = json.load(tokenFile)
+            except IOError:
+                pass
+            except ValueError:
+                pass
 
-        with open("tokens.lst", "w") as tokenFile:
-            tokenFile.write(json.dumps(entries))
+            entries.append(data)
+
+            with open("tokens.lst", "w") as tokenFile:
+                tokenFile.write(json.dumps(entries))
+        else:
+            data = { 'return_type': 0,
+                     'return_value': 1,
+                     'user': user}
 
         return json.dumps(data)
 
@@ -64,6 +72,24 @@ class getTokens:
             return json.dumps(content)
         else:
             return "Error: No tokens found!"
+
+class getDoorStatus:
+    def GET(self):
+
+        # What this function needs to do is get the status of N gpio pin. If grounded, door is closed. If voltage is seen, door is open. ( IIRC this is what we'll be seeing ).
+
+        door_status = -1
+        try:
+            with open("door_status", "r") as tokenFile:
+                door_status = tokenFile.read()
+        except IOError:
+            pass
+
+        data = { 'return_type': 3,
+                 'return_value': door_status }
+
+        return data
+
 
 class openDoor:
     def GET(self, token_id, hash):
