@@ -3,4 +3,6 @@
 project.properties
 bin/*
 gen/*
+*.pyc
+.pydevproject
 
