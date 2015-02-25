@@ -6,6 +6,16 @@ import time
 import hashlib
 import os
 import json
+import pigpio
+
+pi = pigpio.pi()
+
+GPIO_TOGGLE = 4
+GPIO_READ = 25
+
+pi.set_mode(GPIO_TOGGLE, pigpio.OUTPUT)
+pi.set_mode(GPIO_READ, pigpio.INPUT)
+pi.set_pull_up_down(GPIO_READ, pigpio.PUD_UP)
 
 if __name__ != "__main__":              # mod_wsgi has no concept of where it is
     os.chdir(os.path.dirname(__file__)) # any relative paths will fail without this
@@ -121,12 +131,7 @@ class getTokens:
 class getDoorStatus:
     def GET(self):
 
-        door_status = -1
-        try:
-            with open("door_status", "r") as tokenFile:
-                door_status = tokenFile.read()
-        except IOError:
-            pass
+        door_status = int(pi.read(GPIO_READ))
 
         data = { 'return_type': 3,
                  'return_value': door_status }
@@ -153,8 +158,10 @@ class openDoor:
                     data = { 'return_type': 1,
                              'return_value': 0,
                              'return_message': "" }
-
-                    return data
+                    pi.write(4, 0)
+		    time.sleep(.1)
+		    pi.write(4, 1)
+		    return data
                 else:
                     data = { 'return_type': 1,
                              'return_value': 1,

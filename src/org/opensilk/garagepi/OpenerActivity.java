@@ -30,11 +30,14 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.opensilk.garagepi.R;
+
 public class OpenerActivity extends Activity {
 
-    private static final int RETURN_TOKEN   = 0;
-    private static final int RETURN_OPEN    = 1;
-    private static final int RETURN_TOKENS  = 2;
+    private static final int RETURN_TOKEN        = 0;
+    private static final int RETURN_OPEN         = 1;
+    private static final int RETURN_TOKENS       = 2;
+    private static final int RETURN_DOOR_STATUS  = 3;
 
     private static final int USERNAME_ACCEPTED = 0;
     private static final int USERNAME_MISSING  = 1;
@@ -42,6 +45,9 @@ public class OpenerActivity extends Activity {
     private static final int HASH_ACCEPTED = 0;
     private static final int HASH_REJECTED = 1;
 
+    private static final int DOOR_CLOSED = 0;
+    private static final int DOOR_OPEN   = 1;
+    
     private static final boolean DEBUG = false;
 
     private String mUsername;
@@ -49,7 +55,8 @@ public class OpenerActivity extends Activity {
     private String mServerIp;
     private String mServerPort;
 
-	private Button mOpenDoor;
+    private Button mOpenDoor;
+    private Button mDoorStatus;
     private TextView mLogText;
     private ProgressBar mProgressBar;
 
@@ -64,7 +71,7 @@ public class OpenerActivity extends Activity {
 
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		mOpenDoor = (Button) findViewById(R.id.button1);
+		mOpenDoor = (Button) findViewById(R.id.button_open);
 		mOpenDoor.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -77,10 +84,24 @@ public class OpenerActivity extends Activity {
 	
 			    addToLog("Connecting with: " + mServerIp + ":" + mServerPort);
 
-				new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/rest/getToken/" + mUsername);
+				new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/getToken/" + mUsername);
 			}
 		});
 
+	    mDoorStatus = (Button) findViewById(R.id.button_status);
+	        mDoorStatus.setOnClickListener(new OnClickListener() {
+	            @Override
+	            public void onClick(View v) {
+	                mProgressBar.setVisibility(View.VISIBLE);
+	                
+	                mServerIp = mPrefs.getString("pref_server_ip", "");
+	                mServerPort = mPrefs.getString("pref_server_port", "60598");
+	                
+	                addToLog("Getting door status");
+	                new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/getDoorStatus");
+	            }
+	        });
+		
         mLogText = (TextView) findViewById(R.id.txt_log);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -178,7 +199,7 @@ public class OpenerActivity extends Activity {
                                 String md5sum = md5(mPassword + token);
 
                                 addToLog("Sending hashed password!");
-                                new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/rest/openDoor/" + token_id + "/" + md5sum);
+                                new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/openDoor/" + token_id + "/" + md5sum);
                                 break;
                             case USERNAME_MISSING:
                                 String user = json.getString("user");
@@ -203,6 +224,20 @@ public class OpenerActivity extends Activity {
                         mProgressBar.setVisibility(View.INVISIBLE);
                         break;
                     case RETURN_TOKENS:
+                        break;
+                    case RETURN_DOOR_STATUS:
+                        switch (retValue) {
+                            case DOOR_OPEN:
+                                addToLog("Door is currently Open");
+                                break;
+                            case DOOR_CLOSED:
+                                addToLog("Door is currently closed");
+                                break;
+                            default:
+                                addToLog("Unknown door status: " + retValue);
+                        }
+
+                        mProgressBar.setVisibility(View.INVISIBLE);
                         break;
                     default:
                         break;
