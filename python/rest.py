@@ -148,7 +148,7 @@ class openDoor:
         for entry in entries:
             if str(entry['token_id']) == token_id:
 
-                password = USERS['andrew']
+                password = USERS[entry['user']]
 
                 m = hashlib.md5()
                 m.update(password + entry['token'])
@@ -159,9 +159,9 @@ class openDoor:
                              'return_value': 0,
                              'return_message': "" }
                     pi.write(4, 0)
-		    time.sleep(.1)
-		    pi.write(4, 1)
-		    return data
+                    time.sleep(.1)
+                    pi.write(4, 1)
+                    return data
                 else:
                     data = { 'return_type': 1,
                              'return_value': 1,
