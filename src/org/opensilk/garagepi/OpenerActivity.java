@@ -21,6 +21,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +30,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.opensilk.garagepi.R;
@@ -59,6 +62,7 @@ public class OpenerActivity extends Activity {
     private Button mDoorStatus;
     private TextView mLogText;
     private ProgressBar mProgressBar;
+    private ScrollView mScrollView;
 
 	private ArrayList<String> mLogBuffer = new ArrayList<String>();
 
@@ -101,8 +105,31 @@ public class OpenerActivity extends Activity {
 	                new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/getDoorStatus");
 	            }
 	        });
-		
+
+        mScrollView = (ScrollView) findViewById(R.id.log_scrollview);
+
         mLogText = (TextView) findViewById(R.id.txt_log);
+        mLogText.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before,
+                    int count) { /* Nothing */ }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                    int after) { /* Nothing */ }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                mScrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mScrollView.fullScroll(View.FOCUS_DOWN);
+                    }
+                });
+            }
+        });
+
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.INVISIBLE);
 	}
@@ -120,6 +147,10 @@ public class OpenerActivity extends Activity {
 		    Intent settingsIntent = new Intent(this, SettingsActivity.class);
 	        startActivity(settingsIntent);
 			return true;
+		} else if (id == R.id.action_clear_log) {
+		    mLogBuffer.clear();
+		    mLogText.setText("");
+	        return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}

@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,6 +27,7 @@
 
 
 	<ScrollView
+	     android:id="@+id/log_scrollview"
 		 android:layout_width="match_parent"
 		 android:layout_height="0dp"
 		 android:layout_weight="1" 
@@ -40,29 +41,36 @@
 
 	</ScrollView>
 
-	<LinearLayout
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:background="?android:attr/dividerHorizontal" />
+
+    <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:dividerPadding="15dp">
 
-		<Button
+        <Button
             android:id="@+id/button_open"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="?android:attr/buttonBarButtonStyle"
             android:text="Open Door" />
-		
-		<Button
+
+        <Button
             android:id="@+id/button_status"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="?android:attr/buttonBarButtonStyle"
             android:text="Get Status" />
-			
-	</LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
