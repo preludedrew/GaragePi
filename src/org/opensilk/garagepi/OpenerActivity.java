@@ -18,8 +18,10 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -59,12 +61,15 @@ public class OpenerActivity extends Activity {
     private String mServerPort;
 
     private Button mOpenDoor;
-    private Button mDoorStatus;
     private TextView mLogText;
     private ProgressBar mProgressBar;
     private ScrollView mScrollView;
 
-	private ArrayList<String> mLogBuffer = new ArrayList<String>();
+    private PollDoorStatus mDoorStatusThread;
+
+    Handler mHandler = new Handler();
+
+    private ArrayList<String> mLogBuffer = new ArrayList<String>();
 
 	SharedPreferences mPrefs;
 
@@ -92,20 +97,6 @@ public class OpenerActivity extends Activity {
 			}
 		});
 
-	    mDoorStatus = (Button) findViewById(R.id.button_status);
-	        mDoorStatus.setOnClickListener(new OnClickListener() {
-	            @Override
-	            public void onClick(View v) {
-	                mProgressBar.setVisibility(View.VISIBLE);
-	                
-	                mServerIp = mPrefs.getString("pref_server_ip", "");
-	                mServerPort = mPrefs.getString("pref_server_port", "60598");
-	                
-	                addToLog("Getting door status");
-	                new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/getDoorStatus");
-	            }
-	        });
-
         mScrollView = (ScrollView) findViewById(R.id.log_scrollview);
 
         mLogText = (TextView) findViewById(R.id.txt_log);
@@ -132,7 +123,48 @@ public class OpenerActivity extends Activity {
 
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.INVISIBLE);
+
+        if (mDoorStatusThread == null) {
+            mDoorStatusThread = new PollDoorStatus();
+            mDoorStatusThread.start();
+        }
 	}
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mDoorStatusThread != null) {
+            mDoorStatusThread.stop();
+            mDoorStatusThread = null;
+        }
+    }
+
+	@Override
+	public void onPause() {
+	    super.onPause();
+        if (mDoorStatusThread != null) {
+            mDoorStatusThread.stop();
+            mDoorStatusThread = null;
+        }
+	}
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mDoorStatusThread == null) {
+            mDoorStatusThread = new PollDoorStatus();
+            mDoorStatusThread.start();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mDoorStatusThread != null) {
+            mDoorStatusThread.stop();
+            mDoorStatusThread = null;
+        }
+    }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -226,7 +258,7 @@ public class OpenerActivity extends Activity {
 
                                 addToLog("Received token: " + token);
 
-                                addToLog("Calculating password has with token, for user: " + mUsername); //TODO
+                                addToLog("Calculating password hash with token, for user: " + mUsername); //TODO
                                 String md5sum = md5(mPassword + token);
 
                                 addToLog("Sending hashed password!");
@@ -259,10 +291,12 @@ public class OpenerActivity extends Activity {
                     case RETURN_DOOR_STATUS:
                         switch (retValue) {
                             case DOOR_OPEN:
-                                addToLog("Door is currently Open");
+                                mOpenDoor.setText("Close Door");
+                                mOpenDoor.setBackgroundColor(Color.RED);
                                 break;
                             case DOOR_CLOSED:
-                                addToLog("Door is currently closed");
+                                mOpenDoor.setText("Open Door");
+                                mOpenDoor.setBackgroundColor(Color.GREEN);
                                 break;
                             default:
                                 addToLog("Unknown door status: " + retValue);
@@ -303,6 +337,43 @@ public class OpenerActivity extends Activity {
             e.printStackTrace();
         }
         return "";
+    }
+
+    class PollDoorStatus implements Runnable {
+
+        Thread backgroundThread;
+
+        public void start() {
+           if( backgroundThread == null ) {
+              backgroundThread = new Thread( this );
+              backgroundThread.start();
+           }
+        }
+
+        public void stop() {
+           if( backgroundThread != null ) {
+              backgroundThread.interrupt();
+           }
+        }
+
+        public void run() {
+            try {
+               Log.d("GaragePi","Thread starting.");
+               while( !backgroundThread.interrupted() ) {
+                   mServerIp = mPrefs.getString("pref_server_ip", "");
+                   mServerPort = mPrefs.getString("pref_server_port", "60598");
+                   new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/getDoorStatus");
+                   backgroundThread.sleep(5000);
+               }
+               Log.i("GaragePi","Thread stopping.");
+            } catch( InterruptedException ex ) {
+               // important you respond to the InterruptedException and stop processing
+               // when its thrown!  Notice this is outside the while loop.
+               Log.i("GaragePi","Thread shutting down as it was requested to stop.");
+            } finally {
+               backgroundThread = null;
+            }
+        }
     }
 
 }
