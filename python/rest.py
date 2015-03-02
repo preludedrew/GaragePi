@@ -7,15 +7,19 @@ import hashlib
 import os
 import json
 import pigpio
+import urlparse
 
-pi = pigpio.pi()
+DEBUG = True
 
-GPIO_TOGGLE = 4
-GPIO_READ = 25
+if not DEBUG:
+    pi = pigpio.pi()
 
-pi.set_mode(GPIO_TOGGLE, pigpio.OUTPUT)
-pi.set_mode(GPIO_READ, pigpio.INPUT)
-pi.set_pull_up_down(GPIO_READ, pigpio.PUD_UP)
+    GPIO_TOGGLE = 4
+    GPIO_READ = 25
+
+    pi.set_mode(GPIO_TOGGLE, pigpio.OUTPUT)
+    pi.set_mode(GPIO_READ, pigpio.INPUT)
+    pi.set_pull_up_down(GPIO_READ, pigpio.PUD_UP)
 
 if __name__ != "__main__":              # mod_wsgi has no concept of where it is
     os.chdir(os.path.dirname(__file__)) # any relative paths will fail without this
@@ -24,15 +28,14 @@ if __name__ != "__main__":              # mod_wsgi has no concept of where it is
 #
 # Examples/usage:
 #
-#    http://localhost:8080/getToken/<username>
-#    http://localhost:8080/openDoor/<token_id>/<md5_generated_hash>
+#    http://localhost:8080/getToken?username=<username>
+#    http://localhost:8080/openDoor?token_id=<token_id>&hash=<md5_generated_hash>&debug=<optional true/false>
 #    http://localhost:8080/getDoorStatus
 #
 urls = (
-    '/getToken/(.*)', 'getToken',
-    '/openDoor/(.*)/(.*)', 'openDoor',
-    '/getTokens', 'getTokens',
-    '/getDoorStatus', 'getDoorStatus'
+    '/getToken', 'getToken',
+    '/openDoor', 'openDoor',
+    '/getDoorStatus', 'getDoorStatus',
 )
 
 # Application object, give it our list of urls and globals() for class lookup.
@@ -72,7 +75,10 @@ USERS = { 'andrew': "blah123",
 #
 ###############################################################################
 class getToken:
-    def GET(self, user):
+    def GET(self):
+
+        user = web.input(user="")['user']
+
         # make sure the user actually exists
         if user in USERS:
             token = uuid.uuid4().hex
@@ -131,7 +137,10 @@ class getTokens:
 class getDoorStatus:
     def GET(self):
 
-        door_status = int(pi.read(GPIO_READ))
+        if not DEBUG:
+            door_status = int(pi.read(GPIO_READ))
+        else:
+            door_status = -1
 
         data = { 'return_type': 3,
                  'return_value': door_status }
@@ -140,7 +149,13 @@ class getDoorStatus:
 
 
 class openDoor:
-    def GET(self, token_id, hash):
+    global DEBUG
+
+    def GET(self):
+
+        token_id = web.input(token_id="")['token_id']
+        hash = web.input(hash="")['hash']
+        DEBUG = bool(web.input(debug="false")['debug'])
 
         with open("tokens.lst", "r") as tokenFile:
             entries = json.load(tokenFile)
@@ -158,9 +173,10 @@ class openDoor:
                     data = { 'return_type': 1,
                              'return_value': 0,
                              'return_message': "" }
-                    pi.write(4, 0)
-                    time.sleep(.1)
-                    pi.write(4, 1)
+                    if not DEBUG:
+                        pi.write(4, 0)
+                        time.sleep(.1)
+                        pi.write(4, 1)
                     return data
                 else:
                     data = { 'return_type': 1,

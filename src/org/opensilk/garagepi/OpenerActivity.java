@@ -93,7 +93,8 @@ public class OpenerActivity extends Activity {
 	
 			    addToLog("Connecting with: " + mServerIp + ":" + mServerPort);
 
-				new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/getToken/" + mUsername);
+			    String url = getString(R.string.get_token_url, mServerIp, mServerPort, mUsername);
+				new HttpAsyncTask().execute(url);
 			}
 		});
 
@@ -262,7 +263,9 @@ public class OpenerActivity extends Activity {
                                 String md5sum = md5(mPassword + token);
 
                                 addToLog("Sending hashed password!");
-                                new HttpAsyncTask().execute("http://" + mServerIp + ":" + mServerPort + "/openDoor/" + token_id + "/" + md5sum);
+
+                                String url = getString(R.string.open_door_url, mServerIp, mServerPort, token_id, md5sum);
+                                new HttpAsyncTask().execute(url);
                                 break;
                             case USERNAME_MISSING:
                                 String user = json.getString("user");

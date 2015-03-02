@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">GaragePi</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
+    <string name="get_token_url">"http://%1$s:%2$s/getToken?user=%3$s"</string>
+    <string name="open_door_url">"http://%1$s:%2$s/openDoor?token_id=%3$s&amp;hash=%4$s"</string>
 </resources>
