@@ -2,43 +2,43 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
     <PreferenceCategory
-            android:title="Auth">
+            android:title="blah">
 
         <EditTextPreference
                 android:key="pref_username"
-                android:title="Username"
-                android:summary="Enter a username to login with." />
+                android:title="@string/pref_username_title"
+                android:summary="@string/pref_username_summ" />
         
-                <EditTextPreference
+        <EditTextPreference
                 android:key="pref_password"
-                android:title="Password"
-                android:summary="Enter a password to login with." />
+                android:title="@string/pref_password_title"
+                android:summary="@string/pref_password_summ" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
-            android:title="Server">
+            android:title="@string/pref_cat_server_title">
 
         <EditTextPreference
                 android:key="pref_server_ip"
-                android:title="Server IP Address"
-                android:summary="Enter an ip address to connect to." />
+                android:title="@string/pref_ip_address_title"
+                android:summary="@string/pref_ip_address_summ" />
         
         <EditTextPreference
                 android:key="pref_server_port"
-                android:title="Server port number"
-                android:summary="Enter a port number connect with."
+                android:title="@string/pref_port_number_title"
+                android:summary="@string/pref_port_number_summ"
                 android:inputType="number" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
-            android:title="Miscellaneous">
+            android:title="@string/pref_cat_misc_title">
 
         <CheckBoxPreference
                 android:key="pref_debug_mode"
-                android:title="Debug Mode"
-                android:summary="Enable to authenticate, but don't actually open the door" />
+                android:title="@string/pref_debug_mode_title"
+                android:summary="@string/pref_debug_mode_summ" />
 
     </PreferenceCategory>
     

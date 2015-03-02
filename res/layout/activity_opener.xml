@@ -14,7 +14,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Welcome to GaragePi" />
+            android:text="@string/welcome"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
 		<ProgressBar
             android:id="@+id/progress_bar"
@@ -60,8 +61,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            style="?android:attr/buttonBarButtonStyle"
-            android:text="Open Door" />
+            style="?android:attr/buttonBarButtonStyle" />
 
     </LinearLayout>
 

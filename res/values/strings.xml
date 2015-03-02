@@ -2,7 +2,26 @@
 <resources>
 
     <string name="app_name">GaragePi</string>
+    <string name="welcome">Welcome to GaragePi</string>
     <string name="action_settings">Settings</string>
-    <string name="get_token_url">"http://%1$s:%2$s/getToken?user=%3$s"</string>
-    <string name="open_door_url">"http://%1$s:%2$s/openDoor?token_id=%3$s&amp;hash=%4$s&amp;debug=%5$s"</string>
+    <string name="get_token_url">http://%1$s:%2$s/getToken?user=%3$s</string>
+    <string name="open_door_url">http://%1$s:%2$s/openDoor?token_id=%3$s&amp;hash=%4$s&amp;debug=%5$s</string>
+
+    <!-- Settings -->
+    <string name="pref_cat_auth_title">Auth</string>
+    <string name="pref_username_title">Username</string>
+    <string name="pref_username_summ">Enter a username to login with.</string>
+    <string name="pref_password_title">Password</string>
+    <string name="pref_password_summ">Enter a password to login with.</string>
+
+    <string name="pref_cat_server_title">Server</string>
+    <string name="pref_ip_address_title">IP Address</string>
+    <string name="pref_ip_address_summ">Enter an ip address to connect to.</string>
+    <string name="pref_port_number_title">Port number</string>
+    <string name="pref_port_number_summ">Enter a port number connect with.</string>
+
+    <string name="pref_cat_misc_title">Miscellaneous</string>
+    <string name="pref_debug_mode_title">Debug mode</string>
+    <string name="pref_debug_mode_summ">Enable to authenticate, but don\'t actually open the door</string>
+
 </resources>
