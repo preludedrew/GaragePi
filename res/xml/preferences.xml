@@ -31,5 +31,15 @@
                 android:inputType="number" />
 
     </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="Miscellaneous">
+
+        <CheckBoxPreference
+                android:key="pref_debug_mode"
+                android:title="Debug Mode"
+                android:summary="Enable to authenticate, but don't actually open the door" />
+
+    </PreferenceCategory>
     
 </PreferenceScreen>

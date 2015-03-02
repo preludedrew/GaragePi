@@ -59,6 +59,7 @@ public class OpenerActivity extends Activity {
     private String mPassword;
     private String mServerIp;
     private String mServerPort;
+    private boolean mDebugMode;
 
     private Button mOpenDoor;
     private TextView mLogText;
@@ -90,6 +91,7 @@ public class OpenerActivity extends Activity {
                 mPassword = mPrefs.getString("pref_password" , "");
 			    mServerIp = mPrefs.getString("pref_server_ip", "");
 			    mServerPort = mPrefs.getString("pref_server_port", "60598");
+			    mDebugMode = mPrefs.getBoolean("pref_debug_mode", false);
 	
 			    addToLog("Connecting with: " + mServerIp + ":" + mServerPort);
 
@@ -264,7 +266,8 @@ public class OpenerActivity extends Activity {
 
                                 addToLog("Sending hashed password!");
 
-                                String url = getString(R.string.open_door_url, mServerIp, mServerPort, token_id, md5sum);
+                                String url = getString(R.string.open_door_url, mServerIp, mServerPort,
+                                        token_id, md5sum, String.valueOf(mDebugMode));
                                 new HttpAsyncTask().execute(url);
                                 break;
                             case USERNAME_MISSING:
