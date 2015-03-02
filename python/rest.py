@@ -9,7 +9,7 @@ import json
 import pigpio
 import urlparse
 
-DEBUG = True
+DEBUG = False
 
 RETURN_TYPE_TOKEN = 0
 RETURN_TYPE_OPEN_DOOR = 1
@@ -164,7 +164,7 @@ class openDoor:
 
         token_id = web.input(token_id="")['token_id']
         hash = web.input(hash="")['hash']
-        DEBUG = bool(web.input(debug="false")['debug'])
+        DEBUG = (web.input(debug="false")['debug'].lower() in "true")
 
         with open("tokens.lst", "r") as tokenFile:
             entries = json.load(tokenFile)
@@ -182,6 +182,7 @@ class openDoor:
                     data = { 'return_type': RETURN_TYPE_OPEN_DOOR,
                              'return_value': RETURN_VAL_SUCCESS,
                              'return_message': "" }
+
                     if not DEBUG:
                         pi.write(4, 0)
                         time.sleep(.1)
