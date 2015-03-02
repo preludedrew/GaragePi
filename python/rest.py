@@ -11,6 +11,15 @@ import urlparse
 
 DEBUG = True
 
+RETURN_TYPE_TOKEN = 0
+RETURN_TYPE_OPEN_DOOR = 1
+RETURN_TYPE_LOGS = 2 #Unimplemented
+RETURN_TYPE_DOOR_STATUS = 3
+
+RETURN_VAL_SUCCESS = 0
+RETURN_VAL_FAIL = 1
+RETURN_VAL_UNKNOWN = -1
+
 if not DEBUG:
     pi = pigpio.pi()
 
@@ -84,8 +93,8 @@ class getToken:
             token = uuid.uuid4().hex
             token_id = int(time.time())
 
-            data = { 'return_type': 0,
-                     'return_value': 0,
+            data = { 'return_type': RETURN_TYPE_TOKEN,
+                     'return_value': RETURN_VAL_SUCCESS,
                      'user': user,
                      'token_id': token_id,
                      'token': token }
@@ -105,8 +114,8 @@ class getToken:
             with open("tokens.lst", "w") as tokenFile:
                 tokenFile.write(json.dumps(entries))
         else:
-            data = { 'return_type': 0,
-                     'return_value': 1,
+            data = { 'return_type': RETURN_TYPE_TOKEN,
+                     'return_value': RETURN_VAL_FAIL,
                      'user': user}
 
         return json.dumps(data)
@@ -142,7 +151,7 @@ class getDoorStatus:
         else:
             door_status = -1
 
-        data = { 'return_type': 3,
+        data = { 'return_type': RETURN_TYPE_DOOR_STATUS,
                  'return_value': door_status }
 
         return data
@@ -170,8 +179,8 @@ class openDoor:
                 md5 = m.hexdigest()
 
                 if md5 == hash:
-                    data = { 'return_type': 1,
-                             'return_value': 0,
+                    data = { 'return_type': RETURN_TYPE_OPEN_DOOR,
+                             'return_value': RETURN_VAL_SUCCESS,
                              'return_message': "" }
                     if not DEBUG:
                         pi.write(4, 0)
@@ -179,13 +188,13 @@ class openDoor:
                         pi.write(4, 1)
                     return data
                 else:
-                    data = { 'return_type': 1,
-                             'return_value': 1,
+                    data = { 'return_type': RETURN_TYPE_OPEN_DOOR,
+                             'return_value': RETURN_VAL_FAIL,
                              'return_message': "Incorrect hash" }
                     return data
 
-        data = { 'return_type': 1,
-                 'return_value': -1,
+        data = { 'return_type': RETURN_TYPE_OPEN_DOOR,
+                 'return_value': RETURN_VAL_UNKNOWN,
                  'return_message': "Something went wrong." }
 
         return data
