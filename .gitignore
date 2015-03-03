@@ -5,4 +5,5 @@ bin/*
 gen/*
 *.pyc
 .pydevproject
-
+python/tokens.lst
+python/gpi.log
