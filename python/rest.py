@@ -8,6 +8,7 @@ import os
 import json
 import pigpio
 import urlparse
+from datetime import datetime
 
 DEBUG = False
 
@@ -45,6 +46,7 @@ urls = (
     '/getToken', 'getToken',
     '/openDoor', 'openDoor',
     '/getDoorStatus', 'getDoorStatus',
+    '/getLog', 'getLog',
 )
 
 # Application object, give it our list of urls and globals() for class lookup.
@@ -85,8 +87,9 @@ USERS = { 'andrew': "blah123",
 ###############################################################################
 class getToken:
     def GET(self):
-
         user = web.input(user="")['user']
+
+        logIt("[ %s ] Token request received -- %s -- %s" % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user, web.ctx.ip))
 
         # make sure the user actually exists
         if user in USERS:
@@ -120,25 +123,22 @@ class getToken:
 
         return json.dumps(data)
 
-# I wrote this as more of a debug function. I don't see a need for it anymore.
-# This will be transformed into a "clearTokens" function. Which will clear the
-# list of tokens that have been generated. It was serve as a troubleshooting
-# function.
-class getTokens:
+class getLog:
     def GET(self):
-        content = []
+        entries = ""
+
         try:
-            with open("tokens.lst", "r") as tokenFile:
-                content = json.load(tokenFile)
+            with open("gpi.log", "r") as logFile:
+                entries = logFile.read()
         except IOError:
             pass
         except ValueError:
             pass
 
-        if len(content) > 0:
-            return json.dumps(content)
-        else:
-            return "Error: No tokens found!"
+        data = { 'return_type': RETURN_TYPE_LOGS,
+                 'return_value': entries }
+
+        return data
 
 # What this function needs to do is get the status of N gpio pin.
 # If grounded, door is closed. If voltage is seen, door is open.
@@ -155,7 +155,6 @@ class getDoorStatus:
                  'return_value': door_status }
 
         return data
-
 
 class openDoor:
 
@@ -174,8 +173,8 @@ class openDoor:
 
         for entry in entries:
             if str(entry['token_id']) == token_id:
-
-                password = USERS[entry['user']]
+                user = entry['user']
+                password = USERS[user]
 
                 m = hashlib.md5()
                 m.update(password + entry['token'])
@@ -188,20 +187,39 @@ class openDoor:
 
                     if not DEBUG:
                         pi.write(4, 0)
+
+                        # Without sleeping, we're triggering this too fast for the relay
+                        # to do its thing.
                         time.sleep(.1)
+
                         pi.write(4, 1)
+
+                    logIt("[ %s ] Succesful attempt to login detected -- %s -- %s -- %s -- %s" %
+                          (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user, token_id, hash, web.ctx.ip))
+
                     return data
                 else:
                     data = { 'return_type': RETURN_TYPE_OPEN_DOOR,
                              'return_value': RETURN_VAL_FAIL,
                              'return_message': "Incorrect hash" }
+
+                    logIt("[ %s ] Failed attempt to login detected -- %s -- %s -- %s -- %s" %
+                          (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user, token_id, hash, web.ctx.ip))
+
                     return data
 
         data = { 'return_type': RETURN_TYPE_OPEN_DOOR,
                  'return_value': RETURN_VAL_UNKNOWN,
                  'return_message': "Something went wrong." }
 
+        logIt("[ %s ] Failed attempt to login detected, something went wrong -- %s -- %s -- %s -- %s" %
+              (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user, token_id, hash, web.ctx.ip))
+
         return data
+
+def logIt(string):
+    with open("gpi.log", "a+") as logFile:
+        logFile.write(string + "\n")
 
 if __name__ == "__main__":
     app.run() # Used when executing the script manually. Allows for debugging.
