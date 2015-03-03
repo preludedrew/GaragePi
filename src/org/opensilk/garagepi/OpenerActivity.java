@@ -50,8 +50,9 @@ public class OpenerActivity extends Activity {
     private static final int HASH_ACCEPTED = 0;
     private static final int HASH_REJECTED = 1;
 
-    private static final int DOOR_CLOSED = 0;
-    private static final int DOOR_OPEN   = 1;
+    private static final int DOOR_DEBUG   = -1;
+    private static final int DOOR_CLOSED  = 0;
+    private static final int DOOR_OPEN    = 1;
     
     private static final boolean DEBUG = false;
 
@@ -297,12 +298,16 @@ public class OpenerActivity extends Activity {
                     case RETURN_DOOR_STATUS:
                         switch (retValue) {
                             case DOOR_OPEN:
-                                mOpenDoor.setText("Close Door");
+                                mOpenDoor.setText(R.string.close_door);
                                 mOpenDoor.setBackgroundColor(Color.RED);
                                 break;
                             case DOOR_CLOSED:
-                                mOpenDoor.setText("Open Door");
+                                mOpenDoor.setText(R.string.open_door);
                                 mOpenDoor.setBackgroundColor(Color.GREEN);
+                                break;
+                            case DOOR_DEBUG:
+                                mOpenDoor.setText(R.string.debug_mode);
+                                mOpenDoor.setBackgroundColor(Color.BLUE);
                                 break;
                             default:
                                 addToLog("Unknown door status: " + retValue);

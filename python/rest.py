@@ -158,13 +158,16 @@ class getDoorStatus:
 
 
 class openDoor:
-    global DEBUG
 
     def GET(self):
-
+        global DEBUG
         token_id = web.input(token_id="")['token_id']
         hash = web.input(hash="")['hash']
-        DEBUG = (web.input(debug="false")['debug'].lower() in "true")
+
+        # We only care about the debug query option, if we're not globally
+        # in debug mode.
+        if not DEBUG:
+            DEBUG = (web.input(debug=str(DEBUG))['debug'].lower() in "true")
 
         with open("tokens.lst", "r") as tokenFile:
             entries = json.load(tokenFile)
